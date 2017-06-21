@@ -268,13 +268,13 @@ export default {
     return DataService.getData(data, successCallback, errorCallback);
   },
 
-  attachUserDocuments : (params, successCallback, errorCallback) => {
+  attachUserDocuments : (params, file, successCallback, errorCallback) => {
     const data = {
       method : 'post',
       serviceGroup : 'cm',
       endPoint : 'v1/signups/attachments',
       queryParams : params,
-      body : null
+      body : file
     }
     return DataService.getData(data, successCallback, errorCallback);
   }

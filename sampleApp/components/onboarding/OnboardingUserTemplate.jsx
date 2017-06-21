@@ -8,13 +8,17 @@ export default (props) => {
     documentType : '',
     renewalDate : '',
     title : '',
-    selectDocument : '',
   };
   
   const submitForm = function(){
     forOwn(formData, (val, key) =>{
       formData[key] = val.value;
     });
+    //attach file to formData
+    var file = document.getElementById("selectDocumentId").files[0];
+    var userFormData = new FormData();
+    userFormData.userDocument = file;
+    formData.document = userFormData;
     props.submitUserDetailsDocuments(formData);
   };
 
@@ -22,8 +26,11 @@ export default (props) => {
     forOwn(formData, (val, key) =>{
       formData[key] = val.value;
     });
-    props.submitUserDetailsDocuments(formData);
-
+    var file = document.getElementById("selectDocumentId").files[0];
+    var userFormData = new FormData();
+    userFormData.userDocument = file;
+    formData.document = userFormData;
+    props.submitAndFinalizeUserDetailsDocumentsHandler(formData);
   }
 
   return (
@@ -36,10 +43,10 @@ export default (props) => {
             <Col sm={4}>
               <FormControl componentClass="select" placeholder="select" inputRef={(input)=>{formData.documentType = input}}>
                 <option value="select">select</option>
-                <option value="powerOfAttorny">Power Of Attorny</option>
-                <option value="proofOfIdentity">Proof Of Identity</option>
-                <option value="proofOfResidency">Proof Of Residency</option>
-                <option value="termsAndConditions">Terms And Conditions</option>
+                <option value="PowerOfAttorney">Power Of Attorny</option>
+                <option value="ProofOfIdentity">Proof Of Identity</option>
+                <option value="ProofOfResidency">Proof Of Residency</option>
+                <option value="TermsAndConditions">Terms And Conditions</option>
               </FormControl>
             </Col>
           </FormGroup>
@@ -49,7 +56,7 @@ export default (props) => {
                 Renewal Date
               </Col>
               <Col sm={4}>
-                <FormControl type="text" placeholder="Renewal Date" inputRef={(input) => { formData.renewalDate = input;}} />
+                <FormControl type="text" placeholder="DD/MM/YYYY" inputRef={(input) => { formData.renewalDate = input;}} />
               </Col>
           </FormGroup>
 
@@ -67,7 +74,7 @@ export default (props) => {
                 Select Document
               </Col>
               <Col sm={4}>
-                <FormControl type="file" inputRef={(input) => { formData.selectDocument = input;}}/>
+                <FormControl type="file" />
               </Col>
           </FormGroup>
 

@@ -4,6 +4,7 @@ import { forEach, find } from 'lodash';
 import OnboardingTemplate from './OnboardingTemplate';
 import OnboardingUserTemplate from './OnboardingUserTemplate';
 import API from './../utils/API';
+import Loader from '../utils/Loader';
 class Onboarding extends React.PureComponent {
 	constructor (props) {
 		super();
@@ -74,14 +75,15 @@ class Onboarding extends React.PureComponent {
 
     this.attachUserDocumentsParams = {
         DocumentType : 'test',
-        RenewDate : '',
+        RenewalDate : '',
         SignUpId : '',
         Title : ''
     }
 
     this.state = {
       userDetailsSubmitted : false,
-      signupId : ''
+      signupId : '',
+      showLoader : false
     }
 	}
 
@@ -101,49 +103,76 @@ class Onboarding extends React.PureComponent {
 
   populateAttachDocumentRequestParams(data){
     this.attachUserDocumentsParams.DocumentType = data.documentType;
-    this.attachUserDocumentsParams.RenewDate =  data.renewDae;
+    this.attachUserDocumentsParams.RenewalDate =  data.renewalDate;
     this.attachUserDocumentsParams.SignUpId = this.state.signupId;
     this.attachUserDocumentsParams.Title = data.title;
   }
 
-	submitUserDetailsSuccessCallback(response){
-    this.setState({userDetailsSubmitted : true, signUpId : response.SignUpId});
+	
+  submitUserDetailsSuccessCallback(response){
+    this.setState({userDetailsSubmitted : true, signUpId : response.SignUpId, showLoader : false});
+  }
+
+  errorCallback(){
+    this.setState({showLoader : false});
+    alert("Error in submitting form");
   }
 
   submitUserDetailsHandler(data){
 		console.log("In handler")
 		console.log(data);
+    this.setState({showLoader : true});
     /*this.populateSignUpRequestParams(data);*/
-    API.attachUserDocuments(this.attachUserDocumentsParams, this.submitUserDetailsSuccessCallback, this.errorCallback);
+    API.signupUser(this.signupRequestParams, this.submitUserDetailsSuccessCallback.bind(this), this.errorCallback.bind(this));
     this.setState({userDetailsSubmitted : true})
 
 	}
 
-  errorCallback(){
-    alert("Error in submitting form");
-  }
+  
 
   attachUserDocumentSuccessCallback(data){
-    console.lo
+    this.setState({showLoader : false});
+    alert("Successfully attched data");
   }
 
-  submitUserDetailsDocuments(data) {
+  attachAndFinalizeUserDocumentsSuccessCallback(data){
+    this.setState({showLoader : false});
+    alert("successfully uploaded all tha data.");
+  }
+
+  submitUserDetailsDocumentsHandler(data) {
       console.log("In attach document handler");
       console.log(data);
-      /*this.populateAttachDocumentRequestParams();*/
-      API.signupUser(this.signupRequestParams, this.attachUserDocumentSuccessCallback, this.errorCallback);
+      this.setState({showLoader : true});
+      this.populateAttachDocumentRequestParams(data);
+      API.attachUserDocuments(this.attachUserDocumentsParams, data.document,this.attachUserDocumentSuccessCallback.bind(this), this.errorCallback.bind(this));
   }
+
+  submitAndFinalizeUserDetailsDocumentsHandler(data) {
+    this.populateAttachDocumentRequestParams(data);
+    API.attachUserDocuments(this.attachUserDocumentsParams, data.document, this.attachAndFinalizeUserDocumentsSuccessCallback.bind(this), this.errorCallback.bind(this));
+  }
+
+  
 
   renderOnboardingForm(){
     if(this.state.userDetailsSubmitted){
-      return <OnboardingUserTemplate submitUserDetailsDocuments={this.submitUserDetailsDocuments.bind(this)}/>
+      return <OnboardingUserTemplate submitUserDetailsDocuments={this.submitUserDetailsDocumentsHandler.bind(this)} submitAndFinalizeUserDetailsDocumentsHandler = {this.submitAndFinalizeUserDetailsDocumentsHandler.bind(this)}/>
     }else{
       return <OnboardingTemplate submitUserDetailsHandler = {this.submitUserDetailsHandler.bind(this)}/>
     }
   }
+
+  getLoader(){
+    if(this.state.showLoader){
+      return <Loader/>
+    }
+  }
+
 	render() {
 		return (
 			<div className='pad-box'>
+        {this.getLoader()}
 				{this.renderOnboardingForm()}
 			</div>
 		);
